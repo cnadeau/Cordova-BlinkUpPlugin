@@ -58,6 +58,7 @@ typedef NS_ENUM(NSInteger, InvokeBlinkupArguments) {
  ********************************************************/
 - (void)startBlinkUp:(CDVInvokedUrlCommand*)command {
     NSLog(@"startBlinkUp Started.");
+    [self recheckScreenOrientation];
 
     _callbackId = command.callbackId;
 
@@ -82,6 +83,7 @@ typedef NS_ENUM(NSInteger, InvokeBlinkupArguments) {
  ********************************************************/
 - (void)invokeBlinkUp:(CDVInvokedUrlCommand*)command {
     NSLog(@"invokeBlinkUp Started.");
+    [self recheckScreenOrientation];
 
     _callbackId = command.callbackId;
 
@@ -106,6 +108,7 @@ typedef NS_ENUM(NSInteger, InvokeBlinkupArguments) {
  ********************************************************/
 - (void)abortBlinkUp:(CDVInvokedUrlCommand *)command {
     NSLog(@"abortBlinkUp Started.");
+    [self recheckScreenOrientation];
 
     _callbackId = command.callbackId;
 
@@ -125,6 +128,7 @@ typedef NS_ENUM(NSInteger, InvokeBlinkupArguments) {
  ********************************************************/
 - (void) clearBlinkUpData:(CDVInvokedUrlCommand *)command {
     NSLog(@"clearBlinkUpData Started.");
+    [self recheckScreenOrientation];
 
     _callbackId = command.callbackId;
 
@@ -227,6 +231,7 @@ typedef NS_ENUM(NSInteger, InvokeBlinkupArguments) {
         }
     }
 
+    [self recheckScreenOrientation];
     [self sendResultToCallback:pluginResult];
 }
 
@@ -262,6 +267,7 @@ typedef NS_ENUM(NSInteger, InvokeBlinkupArguments) {
         pluginResult.deviceInfo = deviceInfo;
     }
 
+    [self recheckScreenOrientation];
     [self sendResultToCallback:pluginResult];
 }
 
@@ -309,6 +315,20 @@ typedef NS_ENUM(NSInteger, InvokeBlinkupArguments) {
     // must be only alphanumeric characters
     NSCharacterSet *alphaSet = [NSCharacterSet alphanumericCharacterSet];
     return ([[apiKey stringByTrimmingCharactersInSet:alphaSet] length] == 0);
+}
+
+/*********************************************************
+ * From cordova-plugin-recheck-screen-orientation
+ * https://github.com/Adlotto/cordova-plugin-recheck-screen-orientation
+ ********************************************************/
+- (void)recheckScreenOrientation {
+    // HACK: Force rotate by changing the view hierarchy. Present modal view then dismiss it immediately.
+    [self.viewController presentViewController:[UIViewController new] animated:NO completion:^{
+        // delaying dismissal is necessary on iOS 8, crashes otherwise
+        dispatch_after(0, dispatch_get_main_queue(), ^{
+            [self.viewController dismissViewControllerAnimated:NO completion:nil];
+        });
+    }];
 }
 
 @end
